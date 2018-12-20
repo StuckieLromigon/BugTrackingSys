@@ -8,11 +8,16 @@ namespace BTS
 {
     class Feature : Task
     {
-        public new const double Priority = 2;
+        public override double Priority { get { return 2; } }
 
         public Feature(int number, int complexity, string description) : base(number, complexity, description)
         {
 
+        }
+
+        public override string ToString()
+        {
+            return base.ToString("Feature");
         }
     }
 }

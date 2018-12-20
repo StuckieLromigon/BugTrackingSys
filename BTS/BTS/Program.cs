@@ -13,10 +13,13 @@ namespace BTS
         {
             CreateTaskList();
             StartEmulation();
+            Info.ShowInformation();
+            Console.ReadKey();
         }
 
         public static void StartEmulation()
         {
+            Console.WriteLine("Start of Emulation");
             for(int i = 0; i < 30; i++)
             {
                 EmulationStep();
@@ -24,13 +27,14 @@ namespace BTS
                 {
                     AddBugForFeature();
                 }
-                if (Info.TaskList.Count == 0) return;
+                if (Info.TaskList.Count == 0 && Info.TasksInProcess.Count == 0)
+                    return;
             }
         }
 
         public static void AddBugForFeature()
         {
-            for(int i = 0; i < Info.ProcessWidth; i++)
+            for(int i = 0; i < Info.TasksInProcess.Count; i++)
             {
                 if(Info.TasksInProcess[i].GetType() == typeof(Feature))
                 {
@@ -39,10 +43,22 @@ namespace BTS
                     Info.TaskList.Add(Info.TasksInProcess[i]);
                     Info.TasksInProcess.Remove(Info.TasksInProcess[i]);
                     Info.TasksInProcess.Add(bug);
-                    break;
+                    return;
                 }
             }
-            
+            for (int i = 0; i < Info.TaskList.Count; i++)
+            {
+                if (Info.TaskList[i].GetType() == typeof(Feature))
+                {
+                    Bug bug = CreateTask(1) as Bug;
+                    bug.linkedFeature = Info.TaskList[i] as Feature;
+                    bug.linkedFeature.Status = Status.InProgress;
+                    Info.TaskList.Add(bug);
+                    return;
+                }
+            }
+
+
 
         }
 
@@ -58,22 +74,33 @@ namespace BTS
 
         private static void UpdateProcessingTasks()
         {
-            int processCount = Info.TasksInProcess.Count;
-            for (int i = 0; i < processCount; i++)
+            for (int i = 0; i < Info.TasksInProcess.Count; i++)
             {
                 if(Info.TasksInProcess[i].IsCompleted())
                 {
                     Info.TasksInProcess[i].Status = Status.Done;
+
+                    if(Info.TasksInProcess[i] is Bug && (Info.TasksInProcess[i] as Bug).linkedFeature != null)
+                    {
+                        (Info.TasksInProcess[i] as Bug).linkedFeature.Status = Status.Done;
+                        Info.SolvedTasks.Add((Info.TasksInProcess[i] as Bug).linkedFeature);
+                        Info.TaskList.Remove((Info.TasksInProcess[i] as Bug).linkedFeature);
+                    }
+
                     Info.SolvedTasks.Add(Info.TasksInProcess[i]);
                     Info.TasksInProcess.Remove(Info.TasksInProcess[i]);
                     i--;
                 }
             }
-            while (Info.TasksInProcess.Count < Info.ProcessWidth)
+            for (int i = 0; Info.TasksInProcess.Count < Info.ProcessWidth && Info.TaskList.Count > i;)
             {
-                Info.TaskList[0].Status = Status.InProgress;
-                Info.TasksInProcess.Add(Info.TaskList[0]);
-                Info.TaskList.RemoveAt(0);
+                if (Info.TaskList[i].Status != Status.InProgress)
+                {
+                    Info.TaskList[0].Status = Status.InProgress;
+                    Info.TasksInProcess.Add(Info.TaskList[0]);
+                    Info.TaskList.RemoveAt(0);
+                }
+                else { i++; }
             }
         }
 
@@ -85,17 +112,17 @@ namespace BTS
             Info.SolvedTasks = new List<Task>();
             Info.TaskList = new List<Task>();
 
-            while (true)
-            {
-                int taskType = ChooseTaskTypeToCreate();
-                Info.TaskList.Add(CreateTask(taskType));
 
-                Console.WriteLine("Wanna stop? Press Y");
-                ConsoleKeyInfo keyPressed = Console.ReadKey();
-                if (keyPressed.Key == ConsoleKey.Y)
-                    break;
-            }
-
+            Info.TaskList.Add(CreateTask(1));
+            Info.TaskList.Add(CreateTask(1));
+            Info.TaskList.Add(CreateTask(1));
+            Info.TaskList.Add(CreateTask(2));
+            Info.TaskList.Add(CreateTask(2));
+            Info.TaskList.Add(CreateTask(2));
+            Info.TaskList.Add(CreateTask(2));
+            Info.TaskList.Add(CreateTask(3));
+            Info.TaskList.Add(CreateTask(3));
+            Info.TaskList.Add(CreateTask(3));
         }
 
         private static Task CreateTask(int taskType)

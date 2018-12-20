@@ -8,12 +8,17 @@ namespace BTS
 {
     class Bug : Task
     {
-        public new const double Priority = 1;
+        public override double Priority { get { return 1; } }
         public Feature linkedFeature { get; set; }
 
         public Bug(int number, int complexity, string description) : base(number, complexity, description)
         {
 
+        }
+
+        public override string ToString()
+        {
+            return base.ToString("Bug");
         }
     }
 }
