@@ -112,17 +112,16 @@ namespace BTS
             Info.SolvedTasks = new List<Task>();
             Info.TaskList = new List<Task>();
 
+            while (true)
+            {
+                int taskType = ChooseTaskTypeToCreate();
+                Info.TaskList.Add(CreateTask(taskType));
 
-            Info.TaskList.Add(CreateTask(1));
-            Info.TaskList.Add(CreateTask(1));
-            Info.TaskList.Add(CreateTask(1));
-            Info.TaskList.Add(CreateTask(2));
-            Info.TaskList.Add(CreateTask(2));
-            Info.TaskList.Add(CreateTask(2));
-            Info.TaskList.Add(CreateTask(2));
-            Info.TaskList.Add(CreateTask(3));
-            Info.TaskList.Add(CreateTask(3));
-            Info.TaskList.Add(CreateTask(3));
+                Console.WriteLine("Wanna stop? Press Y");
+                ConsoleKeyInfo keyPressed = Console.ReadKey();
+                if (keyPressed.Key == ConsoleKey.Y)
+                    break;
+            }
         }
 
         private static Task CreateTask(int taskType)
